@@ -121,8 +121,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                               HOTEL SEARCH
-                                            ========================= */
+                                                   HOTEL SEARCH
+                                                ========================= */
     if (intent.intent === "hotel_search") {
       if (!intent.budget) {
         return res.json({
@@ -181,8 +181,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                               DEFAULT / GENERAL
-                                            ========================= */
+                                                   DEFAULT / GENERAL
+                                                ========================= */
     return res.json({
       intent: intent.intent || "general",
       text:
@@ -203,6 +203,4 @@ app.post("/chat", async (req, res) => {
 ========================= */
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
-});
+export default app;
