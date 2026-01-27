@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { askLLM } from "../llm.js";
+import { askLLM } from "./llm.js";
 import { error } from "three/src/utils.js";
 
 const app = express();
@@ -125,8 +125,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                           HOTEL SEARCH
-                                                        ========================= */
+                                                                           HOTEL SEARCH
+                                                                        ========================= */
     if (intent.intent === "hotel_search") {
       if (!intent.budget) {
         return res.json({
@@ -185,8 +185,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                           DEFAULT / GENERAL
-                                                        ========================= */
+                                                                           DEFAULT / GENERAL
+                                                                        ========================= */
     return res.json({
       intent: intent.intent || "general",
       text:
@@ -206,5 +206,7 @@ app.post("/chat", async (req, res) => {
    SERVER START
 ========================= */
 const PORT = process.env.PORT || 5000;
-
-export default app;
+app.listen(PORT, () => {
+  // Fix: changed ${port} to ${PORT}
+  console.log(`Server running on http://localhost:${PORT}`);
+});
