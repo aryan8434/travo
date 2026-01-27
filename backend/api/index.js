@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { askLLM } from "./llm.js";
+import { askLLM } from "../llm.js";
+import { error } from "three/src/utils.js";
 
 const app = express();
 app.use(
@@ -95,7 +96,10 @@ function mockHotels(max) {
    HEALTH CHECK
 ========================= */
 app.get("/", (req, res) => {
-  res.send("backend running ");
+  res.send({
+    activeStatus: true,
+    error: false,
+  });
 });
 
 /* =========================
@@ -121,8 +125,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                   HOTEL SEARCH
-                                                ========================= */
+                                                           HOTEL SEARCH
+                                                        ========================= */
     if (intent.intent === "hotel_search") {
       if (!intent.budget) {
         return res.json({
@@ -181,8 +185,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                   DEFAULT / GENERAL
-                                                ========================= */
+                                                           DEFAULT / GENERAL
+                                                        ========================= */
     return res.json({
       intent: intent.intent || "general",
       text:

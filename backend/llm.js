@@ -39,8 +39,8 @@ Rules:
   let userMessage = message;
 
   /* =========================
-                 POLICE CONTEXT HANDLING
-              ========================= */
+                   POLICE CONTEXT HANDLING
+                ========================= */
   if (policeCalled) {
     systemPrompt = `
 You are an intent extractor and response generator for a travel app.
