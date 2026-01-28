@@ -1,8 +1,15 @@
 import express from "express";
 import cors from "cors";
 import { askLLM } from "./llm.js";
+import cors from "cors";
 
 const app = express();
+app.use(
+  cors({
+    origin: "https://travo-front-jjko.vercel.app",
+  }),
+);
+
 app.use(
   cors({
     origin: [
@@ -124,8 +131,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                                               HOTEL SEARCH
-                                                                            ========================= */
+                                                                                       HOTEL SEARCH
+                                                                                    ========================= */
     if (intent.intent === "hotel_search") {
       if (!intent.budget) {
         return res.json({
@@ -184,8 +191,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                                               DEFAULT / GENERAL
-                                                                            ========================= */
+                                                                                       DEFAULT / GENERAL
+                                                                                    ========================= */
     return res.json({
       intent: intent.intent || "general",
       text:
