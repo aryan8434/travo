@@ -1,24 +1,19 @@
 import express from "express";
 import cors from "cors";
 import { askLLM } from "./llm.js";
-import cors from "cors";
 
 const app = express();
 app.use(
   cors({
-    origin: "https://travo-front-jjko.vercel.app",
+    origin: [
+      "http://localhost:5173", // local dev
+      "https://travo-front-jjko.vercel.app", // production (Vercel)
+    ],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
   }),
 );
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173", // local dev
-      "https://your-netlify-site.netlify.app", // production
-    ],
-    methods: ["GET", "POST"],
-  }),
-);
 app.use(express.json());
 
 function mockBuses(from, to) {
@@ -131,8 +126,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                                                       HOTEL SEARCH
-                                                                                    ========================= */
+                                                                                               HOTEL SEARCH
+                                                                                            ========================= */
     if (intent.intent === "hotel_search") {
       if (!intent.budget) {
         return res.json({
@@ -191,8 +186,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                                                       DEFAULT / GENERAL
-                                                                                    ========================= */
+                                                                                               DEFAULT / GENERAL
+                                                                                            ========================= */
     return res.json({
       intent: intent.intent || "general",
       text:
