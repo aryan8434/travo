@@ -33,14 +33,15 @@ Rules:
    5. If the user asks about buses or bus tickets:
    - Set intent to "bus"
    - Extract "from" and "to" cities if mentioned
+6. If users ask about city, state or country then tell the user details about that place
 
 `;
 
   let userMessage = message;
 
   /* =========================
-                       POLICE CONTEXT HANDLING
-                    ========================= */
+                         POLICE CONTEXT HANDLING
+                      ========================= */
   if (policeCalled) {
     systemPrompt = `
 You are an intent extractor and response generator for a travel app.
@@ -80,6 +81,8 @@ Rules:
    5. If the user asks about buses or bus tickets:
    - Set intent to "bus"
    - Extract "from" and "to" cities if mentioned
+
+6. If users ask about city, state or country then tell the user details about that place
 
 
 `;
