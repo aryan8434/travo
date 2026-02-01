@@ -108,7 +108,7 @@ export default function ChatBox({
     pushChatSafely({ role: "user", text });
     setTyping(true);
 
-    fetch("http://localhost:5000/chat", {
+    fetch("https://travo-y7yh.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -140,7 +140,7 @@ export default function ChatBox({
     pushChatSafely({ role: "user", text: userText });
     setTyping(true);
 
-    const res = await fetch("http://localhost:5000/chat", {
+    const res = await fetch("https://travo-y7yh.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

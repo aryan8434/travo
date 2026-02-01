@@ -157,10 +157,7 @@ function mockHotels(max) {
    HEALTH CHECK
 ========================= */
 app.get("/", (req, res) => {
-    res.send({
-        activeStatus: true,
-        error: false,
-    });
+    res.status(200).send("TravoAI backend is running");
 });
 
 /* =========================
@@ -194,8 +191,8 @@ app.post("/chat", async(req, res) => {
         }
 
         /* =========================
-                                                                                                                                                           HOTEL SEARCH
-                                                                                                                                                        ========================= */
+                                                                                                                                                                           HOTEL SEARCH
+                                                                                                                                                                        ========================= */
         if (intent.intent === "hotel_search") {
             if (!intent.budget) {
                 return res.json({
@@ -337,8 +334,8 @@ app.post("/chat", async(req, res) => {
         }
 
         /* =========================
-                                                                                                                                                           DEFAULT / GENERAL
-                                                                                                                                                        ========================= */
+                                                                                                                                                                           DEFAULT / GENERAL
+                                                                                                                                                                        ========================= */
         await saveMessage(sessionId, "llm", responseText);
 
         return res.json({
@@ -362,5 +359,5 @@ connectDB();
 
 app.listen(PORT, () => {
     // Fix: changed ${port} to ${PORT}
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
