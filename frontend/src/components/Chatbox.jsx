@@ -1,6 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import Message from "./Message";
 
+// API URL based on environment
+const API_URL =
+  import.meta.env.MODE === "production"
+    ? "https://travo-y7yh.onrender.com"
+    : "http://localhost:5000";
+
 export default function ChatBox({
   wallet,
   setWallet,
@@ -108,7 +114,7 @@ export default function ChatBox({
     pushChatSafely({ role: "user", text });
     setTyping(true);
 
-    fetch("https://travo-y7yh.onrender.com/chat", {
+    fetch(`${API_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -140,7 +146,7 @@ export default function ChatBox({
     pushChatSafely({ role: "user", text: userText });
     setTyping(true);
 
-    const res = await fetch("https://travo-y7yh.onrender.com/chat", {
+    const res = await fetch(`${API_URL}/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
