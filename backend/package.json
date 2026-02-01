@@ -13,9 +13,11 @@
   "license": "ISC",
   "description": "Backend for TravoAI travel booking assistant",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "groq-sdk": "^0.37.0"
+    "groq-sdk": "^0.37.0",
+    "mongoose": "^9.1.5"
   }
 }

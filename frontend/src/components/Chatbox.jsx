@@ -1,51 +1,79 @@
 import { useState, useRef, useEffect } from "react";
 import Message from "./Message";
 
-export default function ChatBox() {
+export default function ChatBox({
+  wallet,
+  setWallet,
+  bookings,
+  setBookings,
+  chat,
+  setChat,
+}) {
   const [msg, setMsg] = useState("");
-  const [chat, setChat] = useState([]);
+  const sessionIdRef = useRef(getSessionId());
+  const [bookingInProgress, setBookingInProgress] = useState(null);
 
-  const [showHome, setShowHome] = useState(true);
+  const [showHome, setShowHome] = useState(!(chat && chat.length > 0));
   const [hideHome, setHideHome] = useState(false);
   const [typing, setTyping] = useState(false);
   const [policeCalled, setPoliceCalled] = useState(false);
 
   const bottomRef = useRef(null);
 
-  /* =========================
-     AUTO SCROLL
-  ========================= */
+  function getSessionId() {
+    let id = localStorage.getItem("travo_session_id");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("travo_session_id", id);
+    }
+    return id;
+  }
+  function ensureChatStability() {
+    setChat((c) => {
+      if (c.length === 0) {
+        return [
+          {
+            role: "bot",
+            data: { text: " " }, // invisible stabilizer
+          },
+        ];
+      }
+      return c;
+    });
+  }
+
+  function pushChatSafely(message) {
+    requestAnimationFrame(() => {
+      setChat((c) => [...c, message]);
+    });
+  }
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
-  /* =========================
-     HIDE HOME
-  ========================= */
   function hideHomeScreen() {
     if (!showHome) return;
     setHideHome(true);
     setTimeout(() => setShowHome(false), 500);
   }
 
-  /* =========================
-     🚨 POLICE FLOW (SINGLE SOURCE)
-  ========================= */
+  /* 🚨 POLICE FLOW */
   function triggerPoliceFlow() {
     hideHomeScreen();
+    ensureChatStability();
     setPoliceCalled(true);
 
     const botId = Date.now();
 
-    setChat((c) => [
-      ...c,
-      {
-        id: botId,
-        role: "bot",
-        data: { text: "📍 Fetching your location..." },
-      },
-    ]);
+    // STEP 1: Fetching location
+    pushChatSafely({
+      id: botId,
+      role: "bot",
+      data: { text: "📍 Fetching your location..." },
+    });
 
+    // STEP 2: Contacting police
     setTimeout(() => {
       setChat((c) =>
         c.map((m) =>
@@ -59,13 +87,14 @@ export default function ChatBox() {
       );
     }, 3000);
 
+    // STEP 3: Final message
     setTimeout(() => {
       setChat((c) =>
         c.map((m) =>
           m.id === botId
             ? {
                 ...m,
-                data: { text: "🚓 Police is on their way to your location." },
+                data: { text: "🚓 Police are already on their way to you." },
               }
             : m,
         ),
@@ -73,80 +102,144 @@ export default function ChatBox() {
     }, 6000);
   }
 
-  /* =========================
-     SEND MESSAGE
-  ========================= */
+  function sendQuickMessage(text) {
+    hideHomeScreen();
+
+    pushChatSafely({ role: "user", text });
+    setTyping(true);
+
+    fetch("http://localhost:5000/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: sessionIdRef.current,
+        message: text,
+        policeCalled,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setTyping(false);
+
+        if (data?.intent === "police" && !policeCalled) {
+          triggerPoliceFlow();
+          return;
+        }
+
+        pushChatSafely({ role: "bot", data });
+      });
+  }
+
   async function sendMsg() {
     if (!msg.trim()) return;
 
     hideHomeScreen();
-
     const userText = msg;
     setMsg("");
 
-    // show user message
-    setChat((c) => [...c, { role: "user", text: userText }]);
-
+    pushChatSafely({ role: "user", text: userText });
     setTyping(true);
 
     const res = await fetch("http://localhost:5000/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        sessionId: sessionIdRef.current,
         message: userText,
-        policeCalled: policeCalled,
+        policeCalled,
       }),
     });
 
     const data = await res.json();
     setTyping(false);
 
-    // 🚨 police intent → SAME flow as button
     if (data?.intent === "police" && !policeCalled) {
       triggerPoliceFlow();
       return;
     }
 
-    // normal response
-    setChat((c) => [...c, { role: "bot", data }]);
+    pushChatSafely({ role: "bot", data });
   }
 
-  /* =========================
-     BOOK HOTEL
-  ========================= */
-  function handleBook(hotel) {
-    hideHomeScreen();
+  function handleBook(item) {
+    const itemId =
+      item.id ?? item.name ?? item.operator ?? JSON.stringify(item);
+    if (bookingInProgress === itemId) return;
 
-    setChat((c) => [...c, { role: "user", text: `Book ${hotel.name}` }]);
+    setBookingInProgress(itemId);
+    ensureChatStability();
 
+    const price = item.price || 500;
     const botId = Date.now();
 
-    setChat((c) => [
-      ...c,
-      {
-        id: botId,
-        role: "bot",
-        data: { text: "⏳ Booking, please wait..." },
-      },
-    ]);
+    pushChatSafely({
+      id: botId,
+      role: "bot",
+      data: { text: "⏳ Please wait, processing your booking..." },
+    });
 
     setTimeout(() => {
+      if (wallet < price) {
+        setChat((c) =>
+          c.map((m) =>
+            m.id === botId
+              ? {
+                  ...m,
+                  data: {
+                    text: "❌ Booking declined due to insufficient wallet balance.",
+                  },
+                }
+              : m,
+          ),
+        );
+
+        setBookingInProgress(null);
+        return;
+      }
+
       setChat((c) =>
         c.map((m) =>
           m.id === botId
-            ? {
-                ...m,
-                data: { text: `✅ Booking confirmed for ${hotel.name}` },
-              }
+            ? { ...m, data: { text: "⏳ Confirming your booking..." } }
             : m,
         ),
       );
+
+      setTimeout(() => {
+        setWallet((w) => w - price);
+        const bookingId =
+          (crypto && crypto.randomUUID && crypto.randomUUID()) ||
+          `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        const itemIdLocal =
+          item.id ?? item.name ?? item.operator ?? JSON.stringify(item);
+        setBookings((b) => [
+          ...b,
+          {
+            id: bookingId,
+            itemId: itemIdLocal,
+            name: item.name || item.operator,
+            price,
+          },
+        ]);
+
+        setChat((c) =>
+          c.map((m) =>
+            m.id === botId
+              ? {
+                  ...m,
+                  data: {
+                    text: `✅ Booking confirmed for ${item.name || item.operator}`,
+                  },
+                }
+              : m,
+          ),
+        );
+
+        setBookingInProgress(null);
+      }, 3000);
     }, 3000);
   }
 
-  /* =========================
-     ENTER KEY
-  ========================= */
   function handleKey(e) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -155,10 +248,9 @@ export default function ChatBox() {
   }
 
   return (
-    <>
-      {/* HOME SCREEN */}
+    <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {showHome && (
-        <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <img
             src="/homeimg.png"
             className={`w-64 transition-all duration-500 ${
@@ -166,51 +258,88 @@ export default function ChatBox() {
             }`}
           />
 
-          <p className="text-gray-400 max-w-md">
-            Book trips, hotels or contact police with simple text commands
+          <p className="text-gray-400 max-w-md text-center">
+            Book buses, hotels, plan your trip or contact police with simple
+            commands
           </p>
 
           <button
             onClick={() => {
-              setChat((c) => [...c, { role: "user", text: "contact police" }]);
+              hideHomeScreen();
+              pushChatSafely({ role: "user", text: "call police" });
               triggerPoliceFlow();
             }}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full font-semibold"
+            className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full font-semibold"
           >
             🚨 Contact Police
           </button>
+
+          <div className="flex gap-5">
+            <button
+              onClick={() => sendQuickMessage("Plan trip for Delhi")}
+              className="bg-green-600 px-6 py-2 rounded-full"
+            >
+              Plan trip for Delhi
+            </button>
+
+            <button
+              onClick={() => sendQuickMessage("Book hotels under 5000")}
+              className="bg-blue-600 px-6 py-2 rounded-full"
+            >
+              Book hotels under 5000
+            </button>
+
+            <button
+              onClick={() =>
+                sendQuickMessage("Book morning bus Jaipur → Delhi 500 to 1000")
+              }
+              className="bg-purple-600 px-6 py-2 rounded-full"
+            >
+              Book morning bus Jaipur → Delhi under 1000
+            </button>
+            <button
+              onClick={() =>
+                sendQuickMessage(
+                  "Book morning flight Delhi → banglore upto 50000",
+                )
+              }
+              className="bg-orange-600 px-6 py-2 rounded-full"
+            >
+              Book morning flight Delhi → banglore upto 50000
+            </button>
+          </div>
         </div>
       )}
 
-      {/* CHAT */}
       {!showHome && (
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 min-h-96 overflow-y-auto overflow-x-hidden p-4 space-y-4">
           {chat.map((m, i) => (
-            <Message key={m.id || i} msg={m} onBook={handleBook} />
+            <Message
+              key={m.id || i}
+              msg={m}
+              onBook={handleBook}
+              bookings={bookings}
+              bookingInProgress={bookingInProgress}
+            />
           ))}
 
-          {typing && (
-            <div className="italic text-gray-400">TravoAI is typing…</div>
-          )}
-
+          {typing && <div className="italic text-gray-400">Typing…</div>}
           <div ref={bottomRef} />
         </div>
       )}
 
-      {/* INPUT */}
-      <div className="p-4 flex gap-2">
+      <div className="p-4 flex gap-2 shrink-0">
         <textarea
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           onKeyDown={handleKey}
           rows={1}
           className="flex-1 bg-gray-800 p-2 rounded resize-none"
-          placeholder="Ask about hotels, buses, flights..."
         />
         <button onClick={sendMsg} className="bg-blue-600 px-4 rounded">
           Send
         </button>
       </div>
-    </>
+    </div>
   );
 }
