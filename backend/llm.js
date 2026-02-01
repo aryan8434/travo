@@ -93,8 +93,8 @@ Rules:
     let userMessage = message;
 
     /* =========================
-                                             🚨 POLICE CONTEXT
-                                          ========================= */
+                                               🚨 POLICE CONTEXT
+                                            ========================= */
     if (policeCalled) {
         systemPrompt = `
 You are an intent extractor and response generator for a travel app.
@@ -178,15 +178,15 @@ User message: "${message}"`;
     }
 
     /* =========================
-                                             BUILD MESSAGES
-                                          ========================= */
+                                               BUILD MESSAGES
+                                            ========================= */
     const messages = [...history, { role: "user", content: userMessage }];
 
     let rawResponse;
 
     /* =========================
-                                             🔁 PROVIDER SWITCH
-                                          ========================= */
+                                               🔁 PROVIDER SWITCH
+                                            ========================= */
     if (LLM_PROVIDER === "gemini") {
         rawResponse = await callGemini(systemPrompt, messages);
     } else {

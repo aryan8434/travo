@@ -8,10 +8,7 @@ import { getChatHistory } from "./utils/getChatHistory.js";
 const app = express();
 app.use(
     cors({
-        origin: [
-            "http://localhost:5173", // local dev
-            "https://travo-front-jjko.vercel.app", // production (Vercel)
-        ],
+        origin: "*", // Allow all origins for now (can be restricted later)
         methods: ["GET", "POST", "OPTIONS"],
         allowedHeaders: ["Content-Type"],
     }),
@@ -197,8 +194,8 @@ app.post("/chat", async(req, res) => {
         }
 
         /* =========================
-                                                                                                                                                       HOTEL SEARCH
-                                                                                                                                                    ========================= */
+                                                                                                                                                           HOTEL SEARCH
+                                                                                                                                                        ========================= */
         if (intent.intent === "hotel_search") {
             if (!intent.budget) {
                 return res.json({
@@ -340,8 +337,8 @@ app.post("/chat", async(req, res) => {
         }
 
         /* =========================
-                                                                                                                                                       DEFAULT / GENERAL
-                                                                                                                                                    ========================= */
+                                                                                                                                                           DEFAULT / GENERAL
+                                                                                                                                                        ========================= */
         await saveMessage(sessionId, "llm", responseText);
 
         return res.json({
