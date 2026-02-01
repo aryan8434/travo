@@ -191,8 +191,8 @@ app.post("/chat", async(req, res) => {
         }
 
         /* =========================
-                                                                                                                                                                           HOTEL SEARCH
-                                                                                                                                                                        ========================= */
+                                                                                                                                                                               HOTEL SEARCH
+                                                                                                                                                                            ========================= */
         if (intent.intent === "hotel_search") {
             if (!intent.budget) {
                 return res.json({
@@ -334,8 +334,8 @@ app.post("/chat", async(req, res) => {
         }
 
         /* =========================
-                                                                                                                                                                           DEFAULT / GENERAL
-                                                                                                                                                                        ========================= */
+                                                                                                                                                                               DEFAULT / GENERAL
+                                                                                                                                                                            ========================= */
         await saveMessage(sessionId, "llm", responseText);
 
         return res.json({
@@ -355,9 +355,23 @@ app.post("/chat", async(req, res) => {
    SERVER START
 ========================= */
 const PORT = process.env.PORT || 5000;
-connectDB();
 
-app.listen(PORT, () => {
-    // Fix: changed ${port} to ${PORT}
-    console.log(`Server running on port ${PORT}`);
-});
+// Start server and attempt DB connection
+async function startServer() {
+    try {
+        await connectDB();
+        console.log("✅ MongoDB connected");
+    } catch (err) {
+        console.error(
+            "⚠️ MongoDB connection failed, but server continuing:",
+            err.message,
+        );
+        // Don't exit - server can still run without DB for now
+    }
+
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+startServer();
