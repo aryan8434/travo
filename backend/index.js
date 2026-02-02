@@ -198,8 +198,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                                                                                                                                                                                   HOTEL SEARCH
-                                                                                                                                                                                                                ========================= */
+                                                                                                                                                                                                                       HOTEL SEARCH
+                                                                                                                                                                                                                    ========================= */
     if (intent.intent === "hotel_search") {
       if (!intent.budget) {
         return res.json({
@@ -341,8 +341,8 @@ app.post("/chat", async (req, res) => {
     }
 
     /* =========================
-                                                                                                                                                                                                                   DEFAULT / GENERAL
-                                                                                                                                                                                                                ========================= */
+                                                                                                                                                                                                                       DEFAULT / GENERAL
+                                                                                                                                                                                                                    ========================= */
     await saveMessage(sessionId, "llm", responseText);
 
     return res.json({
@@ -382,3 +382,19 @@ async function startServer() {
 }
 
 startServer();
+
+// Global error handler — return JSON on server errors (prevents HTML error pages)
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  if (res.headersSent) return next(err);
+  res
+    .status(err.status || 500)
+    .json({ error: err.message || "Internal Server Error" });
+});
+
+// Warn if important env vars missing
+if (!process.env.JWT_SECRET) {
+  console.warn(
+    "⚠️ JWT_SECRET is not set. Login/signup may fail in production.",
+  );
+}
