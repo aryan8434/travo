@@ -9,7 +9,7 @@ export default function FlightCard({ f, onBook, booked }) {
       <p className="font-semibold">₹{f.price}</p>
 
       <button
-        onClick={() => onBook(f)}
+        onClick={() => onBook({ ...f, name: f.airline })}
         disabled={booked}
         className={`mt-2 px-4 py-1 rounded cursor-pointer ${booked ? "bg-gray-600 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}
       >

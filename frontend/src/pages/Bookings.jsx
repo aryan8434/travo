@@ -1,4 +1,15 @@
 export default function Bookings({ bookings }) {
+  const getBookingName = (booking) => {
+    return booking.name || booking.airline || booking.operator;
+  };
+
+  const getBookingDetails = (booking) => {
+    if (booking.from && booking.to) {
+      return `${booking.from} → ${booking.to}`;
+    }
+    return "";
+  };
+
   return (
     <div className="p-6 flex-1 overflow-y-auto">
       <h2 className="text-xl font-bold mb-4">My Bookings</h2>
@@ -9,7 +20,10 @@ export default function Bookings({ bookings }) {
         <div className="space-y-3">
           {bookings.map((b, i) => (
             <div key={i} className="bg-gray-800 p-3 rounded">
-              <p className="font-semibold">{b.name}</p>
+              <p className="font-semibold">{getBookingName(b)}</p>
+              {getBookingDetails(b) && (
+                <p className="text-sm text-gray-300">{getBookingDetails(b)}</p>
+              )}
               <p className="text-sm text-gray-400">₹{b.price}</p>
             </div>
           ))}

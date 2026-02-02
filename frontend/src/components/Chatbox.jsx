@@ -166,8 +166,18 @@ export default function ChatBox({
 
     pushChatSafely({ role: "bot", data });
   }
+  async function refreshWalletAndBookings() {
+    const res = await fetch(`${API_URL}/user/me`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await res.json();
+    setWallet(data.wallet);
+    setBookings(data.bookings);
+  }
 
-  function handleBook(item) {
+  async function handleBook(item) {
     const itemId =
       item.id ?? item.name ?? item.operator ?? JSON.stringify(item);
     if (bookingInProgress === itemId) return;
@@ -184,7 +194,7 @@ export default function ChatBox({
       data: { text: "⏳ Please wait, processing your booking..." },
     });
 
-    setTimeout(() => {
+    setTimeout(async () => {
       if (wallet < price) {
         setChat((c) =>
           c.map((m) =>
@@ -198,7 +208,6 @@ export default function ChatBox({
               : m,
           ),
         );
-
         setBookingInProgress(null);
         return;
       }
@@ -211,37 +220,60 @@ export default function ChatBox({
         ),
       );
 
-      setTimeout(() => {
-        setWallet((w) => w - price);
-        const bookingId =
-          (crypto && crypto.randomUUID && crypto.randomUUID()) ||
-          `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const itemIdLocal =
-          item.id ?? item.name ?? item.operator ?? JSON.stringify(item);
-        setBookings((b) => [
-          ...b,
-          {
-            id: bookingId,
-            itemId: itemIdLocal,
-            name: item.name || item.operator,
+      setTimeout(async () => {
+        try {
+          const booking = {
+            name: item.airline || item.operator || item.name,
             price,
-          },
-        ]);
+          };
 
-        setChat((c) =>
-          c.map((m) =>
-            m.id === botId
-              ? {
-                  ...m,
-                  data: {
-                    text: `✅ Booking confirmed for ${item.name || item.operator}`,
-                  },
-                }
-              : m,
-          ),
-        );
+          const res = await fetch(`${API_URL}/user/book`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ booking }),
+          });
 
-        setBookingInProgress(null);
+          if (!res.ok) {
+            throw new Error("Booking API failed");
+          }
+
+          // ✅ optimistic UI update
+          setBookings((b) => [...b, { id: Date.now(), ...booking }]);
+
+          setChat((c) =>
+            c.map((m) =>
+              m.id === botId
+                ? {
+                    ...m,
+                    data: {
+                      text: `✅ Booking confirmed for ${booking.name}`,
+                    },
+                  }
+                : m,
+            ),
+          );
+          await refreshWalletAndBookings();
+        } catch (err) {
+          console.error("Booking error:", err);
+
+          setChat((c) =>
+            c.map((m) =>
+              m.id === botId
+                ? {
+                    ...m,
+                    data: {
+                      text: "❌ Booking failed. Please try again.",
+                    },
+                  }
+                : m,
+            ),
+          );
+        } finally {
+          setBookingInProgress(null);
+        }
       }, 3000);
     }, 3000);
   }
