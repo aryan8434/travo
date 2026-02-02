@@ -8,6 +8,13 @@ export default function Message({
   bookings = [],
   bookingInProgress,
 }) {
+  const getItemId = (item) =>
+    item.id ??
+    item.name ??
+    item.airline ??
+    item.operator ??
+    JSON.stringify(item);
+
   /* USER MESSAGE */
   if (msg.role === "user") {
     return (
@@ -34,11 +41,17 @@ export default function Message({
       {/* FLIGHT CARDS */}
       {type === "flight" &&
         results?.map((f, i) => {
-          const id = f.id ?? f.airline ?? JSON.stringify(f);
+          const id = getItemId(f);
           const booked = bookings.some((bk) => bk.itemId === id);
+          const isProcessing = bookingInProgress === id;
           return (
             <div key={i} className="min-h-[80px] w-full overflow-hidden">
-              <FlightCard f={f} onBook={onBook} booked={booked} />
+              <FlightCard
+                f={f}
+                onBook={onBook}
+                booked={booked}
+                isProcessing={isProcessing}
+              />
             </div>
           );
         })}
@@ -46,11 +59,17 @@ export default function Message({
       {/* HOTEL CARDS */}
       {type === "hotel" &&
         results?.map((h, i) => {
-          const id = h.id ?? h.name ?? JSON.stringify(h);
+          const id = getItemId(h);
           const booked = bookings.some((bk) => bk.itemId === id);
+          const isProcessing = bookingInProgress === id;
           return (
             <div key={i} className="min-h-[80px] w-full overflow-hidden">
-              <HotelCard h={h} onBook={onBook} booked={booked} />
+              <HotelCard
+                h={h}
+                onBook={onBook}
+                booked={booked}
+                isProcessing={isProcessing}
+              />
             </div>
           );
         })}
@@ -58,11 +77,17 @@ export default function Message({
       {/* BUS CARDS */}
       {type === "bus" &&
         results?.map((b, i) => {
-          const id = b.id ?? b.operator ?? JSON.stringify(b);
+          const id = getItemId(b);
           const booked = bookings.some((bk) => bk.itemId === id);
+          const isProcessing = bookingInProgress === id;
           return (
             <div key={i} className="min-h-[80px] w-full overflow-hidden">
-              <BusCard b={b} onBook={onBook} booked={booked} />
+              <BusCard
+                b={b}
+                onBook={onBook}
+                booked={booked}
+                isProcessing={isProcessing}
+              />
             </div>
           );
         })}

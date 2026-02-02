@@ -6,8 +6,11 @@ const router = express.Router();
 
 /* Get wallet + bookings */
 router.get("/me", auth, async (req, res) => {
-  const user = await User.findById(req.userId).select("wallet bookings");
+  const user = await User.findById(req.userId).select(
+    "username wallet bookings",
+  );
   res.json({
+    username: user.username,
     wallet: user.wallet,
     bookings: user.bookings,
   });

@@ -14,6 +14,7 @@ function App() {
   const [wallet, setWallet] = useState(0);
   const [bookings, setBookings] = useState([]);
   const [chat, setChat] = useState([]);
+  const [username, setUsername] = useState("");
 
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [authPage, setAuthPage] = useState("login");
@@ -31,6 +32,7 @@ function App() {
       .then((data) => {
         setWallet(data.wallet || 0);
         setBookings(data.bookings || []);
+        setUsername(data.username || "");
       })
       .catch(() => {
         // token invalid → logout
@@ -58,6 +60,7 @@ function App() {
           setBookings={setBookings}
           chat={chat}
           setChat={setChat}
+          username={username}
         />
       )}
 
@@ -66,9 +69,18 @@ function App() {
 
       {/* Bottom Navigation */}
       <div className="flex justify-around bg-gray-800 p-3 border-t border-gray-700">
-        <button onClick={() => setTab("home")}>🏠 Home</button>
-        <button onClick={() => setTab("bookings")}>📑 Bookings</button>
-        <button onClick={() => setTab("wallet")}>💰 Wallet</button>
+        <button style={{ cursor: "pointer" }} onClick={() => setTab("home")}>
+          🏠 Home
+        </button>
+        <button
+          style={{ cursor: "pointer" }}
+          onClick={() => setTab("bookings")}
+        >
+          📑 Bookings
+        </button>
+        <button style={{ cursor: "pointer" }} onClick={() => setTab("wallet")}>
+          💰 Wallet
+        </button>
       </div>
     </div>
   );

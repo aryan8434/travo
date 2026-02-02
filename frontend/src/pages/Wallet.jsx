@@ -31,14 +31,16 @@ export default function Wallet({ wallet, setWallet }) {
   }
 
   return (
-    <div className="p-6 flex-1 text-center space-y-4">
-      <h2 className="text-xl font-bold">Wallet</h2>
+    <div className="p-4 sm:p-6 flex-1 text-center space-y-4 sm:space-y-6 bg-gray-950 flex flex-col items-center justify-center">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Wallet</h2>
 
-      <p className="text-3xl font-bold">₹{wallet}</p>
+      <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400">
+        ₹{wallet}
+      </p>
 
       <button
         onClick={() => addMoney(5000)}
-        className="bg-green-600 px-6 py-2 rounded-full font-semibold"
+        className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base transition-colors"
       >
         ➕ Add ₹5000
       </button>

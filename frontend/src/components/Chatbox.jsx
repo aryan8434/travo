@@ -223,6 +223,7 @@ export default function ChatBox({
       setTimeout(async () => {
         try {
           const booking = {
+            itemId,
             name: item.airline || item.operator || item.name,
             price,
           };
@@ -288,15 +289,15 @@ export default function ChatBox({
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
       {showHome && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 sm:gap-4 bg-gray-950 p-4 sm:p-6">
           <img
             src="/homeimg.png"
-            className={`w-64 transition-all duration-500 ${
+            className={`w-40 sm:w-48 md:w-64 transition-all duration-500 ${
               hideHome ? "scale-50 opacity-0" : "scale-100 opacity-100"
             }`}
           />
 
-          <p className="text-gray-400 max-w-md text-center">
+          <p className="text-gray-400 max-w-md text-center text-sm sm:text-base">
             Book buses, hotels, plan your trip or contact police with simple
             commands
           </p>
@@ -307,22 +308,22 @@ export default function ChatBox({
               pushChatSafely({ role: "user", text: "call police" });
               triggerPoliceFlow();
             }}
-            className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full font-semibold"
+            className="bg-red-600 hover:bg-red-700 px-4 sm:px-6 py-1 sm:py-2 rounded-full font-semibold text-sm sm:text-base"
           >
             🚨 Contact Police
           </button>
 
-          <div className="flex gap-5">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-5 w-full sm:w-auto">
             <button
               onClick={() => sendQuickMessage("Plan trip for Delhi")}
-              className="bg-green-600 px-6 py-2 rounded-full"
+              className="bg-green-600 px-3 sm:px-6 py-1 sm:py-2 rounded-full text-xs sm:text-sm md:text-base whitespace-nowrap"
             >
               Plan trip for Delhi
             </button>
 
             <button
               onClick={() => sendQuickMessage("Book hotels under 5000")}
-              className="bg-blue-600 px-6 py-2 rounded-full"
+              className="bg-blue-600 px-3 sm:px-6 py-1 sm:py-2 rounded-full text-xs sm:text-sm md:text-base whitespace-nowrap"
             >
               Book hotels under 5000
             </button>
@@ -331,9 +332,9 @@ export default function ChatBox({
               onClick={() =>
                 sendQuickMessage("Book morning bus Jaipur → Delhi 500 to 1000")
               }
-              className="bg-purple-600 px-6 py-2 rounded-full"
+              className="bg-purple-600 px-3 sm:px-6 py-1 sm:py-2 rounded-full text-xs sm:text-sm md:text-base whitespace-nowrap"
             >
-              Book morning bus Jaipur → Delhi under 1000
+              Book bus Jaipur → Delhi
             </button>
             <button
               onClick={() =>
@@ -341,16 +342,16 @@ export default function ChatBox({
                   "Book morning flight Delhi → banglore upto 50000",
                 )
               }
-              className="bg-orange-600 px-6 py-2 rounded-full"
+              className="bg-orange-600 px-3 sm:px-6 py-1 sm:py-2 rounded-full text-xs sm:text-sm md:text-base whitespace-nowrap"
             >
-              Book morning flight Delhi → banglore upto 50000
+              Book flight Delhi → Bangalore
             </button>
           </div>
         </div>
       )}
 
       {!showHome && (
-        <div className="flex-1 min-h-96 overflow-y-auto overflow-x-hidden p-4 space-y-4">
+        <div className="flex-1 min-h-96 overflow-y-auto overflow-x-hidden p-3 sm:p-4 space-y-4 bg-gray-900">
           {chat.map((m, i) => (
             <Message
               key={m.id || i}
@@ -361,20 +362,25 @@ export default function ChatBox({
             />
           ))}
 
-          {typing && <div className="italic text-gray-400">Typing…</div>}
+          {typing && (
+            <div className="italic text-gray-400 text-sm">Typing…</div>
+          )}
           <div ref={bottomRef} />
         </div>
       )}
 
-      <div className="p-4 flex gap-2 shrink-0">
+      <div className="p-2 sm:p-4 flex gap-2 shrink-0 bg-gray-800">
         <textarea
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
           onKeyDown={handleKey}
           rows={1}
-          className="flex-1 bg-gray-800 p-2 rounded resize-none"
+          className="flex-1 bg-gray-700 p-2 rounded resize-none text-sm"
         />
-        <button onClick={sendMsg} className="bg-blue-600 px-4 rounded">
+        <button
+          onClick={sendMsg}
+          className="bg-blue-600 px-3 sm:px-4 py-2 rounded text-sm sm:text-base font-medium"
+        >
           Send
         </button>
       </div>
