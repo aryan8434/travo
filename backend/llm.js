@@ -87,15 +87,15 @@ Rules:
 9. for bus/flight booking if user say only one city name then ask in general for please tell destination too and set intent to general
 10. if user just reply number like 5000,10000 check previous message if user asking for flight or bus or hotel, 
 11. for any price mentioned only numbers like 1000, 2000 then assume lower range to be 0
-12. If someone ask for customer support give number +91 8434827927
+12. If someone ask for customer support give number +91 8434827927 tell he is my developer , for any customer or tech related support reach out to him, he would help you
 .If someone ask who developed you,TravoAI, then tell great developer Mr. Aryan has created me his linkedin profile is https://www.linkedin.com/in/aryan-kumar-raj-988587b3/
 `;
 
   let userMessage = message;
 
   /* =========================
-                                                       🚨 POLICE CONTEXT
-                                                    ========================= */
+                                                         🚨 POLICE CONTEXT
+                                                      ========================= */
   if (policeCalled) {
     systemPrompt = `
 You are an intent extractor and response generator for a travel app.
@@ -181,15 +181,15 @@ User message: "${message}"`;
   }
 
   /* =========================
-                                                       BUILD MESSAGES
-                                                    ========================= */
+                                                         BUILD MESSAGES
+                                                      ========================= */
   const messages = [...history, { role: "user", content: userMessage }];
 
   let rawResponse;
 
   /* =========================
-                                                       🔁 PROVIDER SWITCH
-                                                    ========================= */
+                                                         🔁 PROVIDER SWITCH
+                                                      ========================= */
   if (LLM_PROVIDER === "gemini") {
     rawResponse = await callGemini(systemPrompt, messages);
   } else {
