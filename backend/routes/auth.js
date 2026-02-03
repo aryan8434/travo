@@ -11,7 +11,7 @@ router.post("/signup", async (req, res) => {
 
     const exists = await User.findOne({ username });
     if (exists) {
-      return res.status(400).json({ error: "User already exists" });
+      return res.status(400).json({ error: "User already exists, login" });
     }
 
     // ❌ bcrypt removed
@@ -35,7 +35,9 @@ router.post("/login", async (req, res) => {
 
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res
+        .status(400)
+        .json({ error: "Invalid username, create new one" });
     }
 
     // ❌ bcrypt removed
@@ -46,7 +48,7 @@ router.post("/login", async (req, res) => {
 
     // ✅ raw password check
     if (password !== user.password) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "Invalid password" });
     }
 
     if (!process.env.JWT_SECRET) {

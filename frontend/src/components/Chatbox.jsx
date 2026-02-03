@@ -363,7 +363,10 @@ export default function ChatBox({
           ))}
 
           {typing && (
-            <div className="italic text-gray-400 text-sm">Typing…</div>
+            <div className="italic text-gray-400 text-sm">
+              TravoAI is typing, It may take upto 1 minutes for backend to
+              start, please wait
+            </div>
           )}
           <div ref={bottomRef} />
         </div>
