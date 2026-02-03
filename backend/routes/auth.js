@@ -1,5 +1,5 @@
 import express from "express";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
@@ -14,11 +14,12 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    const hash = await bcrypt.hash(password, 10);
+    // ❌ bcrypt removed
+    // const hash = await bcrypt.hash(password, 10);
 
     await User.create({
       username,
-      password: hash,
+      password, // ✅ store raw password
     });
 
     res.json({ success: true });
@@ -37,8 +38,14 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid credentials" });
     }
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
+    // ❌ bcrypt removed
+    // const ok = await bcrypt.compare(password, user.password);
+    // if (!ok) {
+    //   return res.status(400).json({ error: "Invalid credentials" });
+    // }
+
+    // ✅ raw password check
+    if (password !== user.password) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
 
