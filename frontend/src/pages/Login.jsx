@@ -9,6 +9,51 @@ export default function Login({ setToken, goSignup }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [usernameValidation, setUsernameValidation] = useState({
+    letterCount: 0,
+    digitCount: 0,
+    meetsLocal: false,
+  });
+  const [passwordValidation, setPasswordValidation] = useState({
+    letterCount: 0,
+    digitCount: 0,
+    meetsRules: false,
+  });
+
+  function validateUsernameLocal(u) {
+    const letters = (u.match(/[A-Za-z]/g) || []).length;
+    const digits = (u.match(/[0-9]/g) || []).length;
+    const meetsLocal = letters >= 4 && digits >= 2;
+    setUsernameValidation({
+      letterCount: letters,
+      digitCount: digits,
+      meetsLocal,
+    });
+  }
+
+  function validatePasswordLocal(p) {
+    const letters = (p.match(/[A-Za-z]/g) || []).length;
+    const digits = (p.match(/[0-9]/g) || []).length;
+    const meetsRules = letters >= 4 && digits >= 1;
+    setPasswordValidation({
+      letterCount: letters,
+      digitCount: digits,
+      meetsRules,
+    });
+  }
+
+  function handleUsernameChange(u) {
+    setUsername(u);
+    validateUsernameLocal(u);
+  }
+
+  function handlePasswordChange(p) {
+    setPassword(p);
+    validatePasswordLocal(p);
+  }
+
+  const isLoginDisabled =
+    !usernameValidation.meetsLocal || !passwordValidation.meetsRules;
 
   async function handleLogin() {
     setError("");
@@ -39,16 +84,32 @@ export default function Login({ setToken, goSignup }) {
           placeholder="Username"
           className="w-full p-2 mb-3 bg-gray-700 rounded"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e) => handleUsernameChange(e.target.value)}
         />
+        <div className="text-xs mb-2 space-y-1">
+          <div className={usernameValidation.letterCount >= 4 ? "text-green-400" : "text-red-400"}>
+            {usernameValidation.letterCount >= 4 ? "✅" : "❌"} Letters: {usernameValidation.letterCount}/4
+          </div>
+          <div className={usernameValidation.digitCount >= 2 ? "text-green-400" : "text-red-400"}>
+            {usernameValidation.digitCount >= 2 ? "✅" : "❌"} Digits: {usernameValidation.digitCount}/2
+          </div>
+        </div>
 
         <input
           type="password"
           placeholder="Password"
           className="w-full p-2 mb-3 bg-gray-700 rounded"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => handlePasswordChange(e.target.value)}
         />
+        <div className="text-xs mb-2 space-y-1">
+          <div className={passwordValidation.letterCount >= 4 ? "text-green-400" : "text-red-400"}>
+            {passwordValidation.letterCount >= 4 ? "✅" : "❌"} Letters: {passwordValidation.letterCount}/4
+          </div>
+          <div className={passwordValidation.digitCount >= 1 ? "text-green-400" : "text-red-400"}>
+            {passwordValidation.digitCount >= 1 ? "✅" : "❌"} Digits: {passwordValidation.digitCount}/1
+          </div>
+        </div>
 
         {error && <p className="text-red-400 text-sm mb-2">{error}</p>}
 
