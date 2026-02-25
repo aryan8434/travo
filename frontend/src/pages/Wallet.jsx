@@ -1,8 +1,7 @@
-export default function Wallet({ wallet, setWallet }) {
-  const API_URL =
-    import.meta.env.MODE === "production"
-      ? "https://travo-y7yh.onrender.com"
-      : "http://localhost:5000";
+export default function Wallet({ wallet, setWallet, isGuest }) {
+  const API_URL = import.meta.env.PROD
+    ? ""
+    : import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   async function addMoney(amount = 5000) {
     try {
@@ -38,12 +37,31 @@ export default function Wallet({ wallet, setWallet }) {
         ₹{wallet}
       </p>
 
-      <button
-        onClick={() => addMoney(5000)}
-        className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base transition-colors"
-      >
-        ➕ Add ₹5000
-      </button>
+      {isGuest ? (
+        <div className="bg-red-900 border border-red-700 p-4 rounded max-w-xs">
+          <p className="text-red-200 font-semibold mb-2">Login Required</p>
+          <p className="text-red-300 text-sm mb-3">
+            You need to login with your account to add money to your wallet
+          </p>
+          <button
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("isGuest");
+              window.location.reload();
+            }}
+            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm"
+          >
+            Login Now
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => addMoney(5000)}
+          className="bg-green-600 hover:bg-green-700 px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base transition-colors"
+        >
+          ➕ Add ₹5000
+        </button>
+      )}
     </div>
   );
 }

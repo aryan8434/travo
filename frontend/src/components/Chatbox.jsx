@@ -2,10 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import Message from "./Message";
 
 // API URL based on environment
-const API_URL =
-  import.meta.env.MODE === "production"
-    ? "https://travo-y7yh.onrender.com"
-    : "http://localhost:5000";
+const API_URL = import.meta.env.PROD
+  ? ""
+  : import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function ChatBox({
   wallet,
@@ -14,6 +13,7 @@ export default function ChatBox({
   setBookings,
   chat,
   setChat,
+  isGuest,
 }) {
   const [msg, setMsg] = useState("");
   const sessionIdRef = useRef(getSessionId());
@@ -26,10 +26,29 @@ export default function ChatBox({
 
   const bottomRef = useRef(null);
 
+  // Save chat history to localStorage for guests
+  function saveGuestChatHistory(updatedChat) {
+    if (isGuest) {
+      localStorage.setItem("guestChatHistory", JSON.stringify(updatedChat));
+    }
+  }
+
   function getSessionId() {
     let id = localStorage.getItem("travo_session_id");
     if (!id) {
-      id = crypto.randomUUID();
+      // Fallback for non-secure contexts (HTTP on AWS)
+      if (typeof crypto !== "undefined" && crypto.randomUUID) {
+        id = crypto.randomUUID();
+      } else {
+        id = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+          /[xy]/g,
+          function (c) {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          },
+        );
+      }
       localStorage.setItem("travo_session_id", id);
     }
     return id;
@@ -50,7 +69,11 @@ export default function ChatBox({
 
   function pushChatSafely(message) {
     requestAnimationFrame(() => {
-      setChat((c) => [...c, message]);
+      setChat((c) => {
+        const updated = [...c, message];
+        saveGuestChatHistory(updated);
+        return updated;
+      });
     });
   }
 
@@ -81,30 +104,34 @@ export default function ChatBox({
 
     // STEP 2: Contacting police
     setTimeout(() => {
-      setChat((c) =>
-        c.map((m) =>
+      setChat((c) => {
+        const updated = c.map((m) =>
           m.id === botId
             ? {
                 ...m,
                 data: { text: "📞 Contacting nearest police station..." },
               }
             : m,
-        ),
-      );
+        );
+        saveGuestChatHistory(updated);
+        return updated;
+      });
     }, 3000);
 
     // STEP 3: Final message
     setTimeout(() => {
-      setChat((c) =>
-        c.map((m) =>
+      setChat((c) => {
+        const updated = c.map((m) =>
           m.id === botId
             ? {
                 ...m,
                 data: { text: "🚓 Police are already on their way to you." },
               }
             : m,
-        ),
-      );
+        );
+        saveGuestChatHistory(updated);
+        return updated;
+      });
     }, 6000);
   }
 
@@ -133,6 +160,7 @@ export default function ChatBox({
         }
 
         pushChatSafely({ role: "bot", data });
+        saveGuestChatHistory(chat);
       });
   }
 
@@ -165,6 +193,7 @@ export default function ChatBox({
     }
 
     pushChatSafely({ role: "bot", data });
+    saveGuestChatHistory(chat);
   }
   async function refreshWalletAndBookings() {
     const res = await fetch(`${API_URL}/user/me`, {
@@ -188,6 +217,18 @@ export default function ChatBox({
     const price = item.price || 500;
     const botId = Date.now();
 
+    if (isGuest) {
+      pushChatSafely({
+        id: botId,
+        role: "bot",
+        data: {
+          text: " You are browsing as a guest. Please login to book.",
+        },
+      });
+      setBookingInProgress(null);
+      return;
+    }
+
     pushChatSafely({
       id: botId,
       role: "bot",
@@ -196,8 +237,8 @@ export default function ChatBox({
 
     setTimeout(async () => {
       if (wallet < price) {
-        setChat((c) =>
-          c.map((m) =>
+        setChat((c) => {
+          const updated = c.map((m) =>
             m.id === botId
               ? {
                   ...m,
@@ -206,19 +247,23 @@ export default function ChatBox({
                   },
                 }
               : m,
-          ),
-        );
+          );
+          saveGuestChatHistory(updated);
+          return updated;
+        });
         setBookingInProgress(null);
         return;
       }
 
-      setChat((c) =>
-        c.map((m) =>
+      setChat((c) => {
+        const updated = c.map((m) =>
           m.id === botId
             ? { ...m, data: { text: "⏳ Confirming your booking..." } }
             : m,
-        ),
-      );
+        );
+        saveGuestChatHistory(updated);
+        return updated;
+      });
 
       setTimeout(async () => {
         try {
@@ -242,10 +287,13 @@ export default function ChatBox({
           }
 
           // ✅ optimistic UI update
-          setBookings((b) => [...b, { id: Date.now(), ...booking }]);
+          setBookings((b) => [
+            ...b,
+            { id: Date.now(), createdAt: new Date().toISOString(), ...booking },
+          ]);
 
-          setChat((c) =>
-            c.map((m) =>
+          setChat((c) => {
+            const updated = c.map((m) =>
               m.id === botId
                 ? {
                     ...m,
@@ -254,14 +302,16 @@ export default function ChatBox({
                     },
                   }
                 : m,
-            ),
-          );
+            );
+            saveGuestChatHistory(updated);
+            return updated;
+          });
           await refreshWalletAndBookings();
         } catch (err) {
           console.error("Booking error:", err);
 
-          setChat((c) =>
-            c.map((m) =>
+          setChat((c) => {
+            const updated = c.map((m) =>
               m.id === botId
                 ? {
                     ...m,
@@ -270,8 +320,10 @@ export default function ChatBox({
                     },
                   }
                 : m,
-            ),
-          );
+            );
+            saveGuestChatHistory(updated);
+            return updated;
+          });
         } finally {
           setBookingInProgress(null);
         }
@@ -379,10 +431,12 @@ export default function ChatBox({
           onKeyDown={handleKey}
           rows={1}
           className="flex-1 bg-gray-700 p-2 rounded resize-none text-sm"
+          placeholder="Type message to book hotels, buses, flights or plan trips..."
         />
         <button
           onClick={sendMsg}
           className="bg-blue-600 px-3 sm:px-4 py-2 rounded text-sm sm:text-base font-medium"
+          cursor="pointer"
         >
           Send
         </button>

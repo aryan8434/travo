@@ -1,14 +1,23 @@
 import { useState } from "react";
 
-const API_URL =
-  import.meta.env.MODE === "production"
-    ? "https://travo-y7yh.onrender.com"
-    : "http://localhost:5000";
+const API_URL = import.meta.env.PROD
+  ? ""
+  : import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Login({ setToken, goSignup }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
+  function handleGuestLogin() {
+    localStorage.setItem("isGuest", "true");
+    localStorage.setItem("guestToken", "guest-session-" + Date.now());
+    // Initialize empty chat history if not exists
+    if (!localStorage.getItem("guestChatHistory")) {
+      localStorage.setItem("guestChatHistory", JSON.stringify([]));
+    }
+    setToken("guest");
+  }
   const [usernameValidation, setUsernameValidation] = useState({
     letterCount: 0,
     digitCount: 0,
@@ -87,11 +96,25 @@ export default function Login({ setToken, goSignup }) {
           onChange={(e) => handleUsernameChange(e.target.value)}
         />
         <div className="text-xs mb-2 space-y-1">
-          <div className={usernameValidation.letterCount >= 4 ? "text-green-400" : "text-red-400"}>
-            {usernameValidation.letterCount >= 4 ? "✅" : "❌"} Letters: {usernameValidation.letterCount}/4
+          <div
+            className={
+              usernameValidation.letterCount >= 4
+                ? "text-green-400"
+                : "text-red-400"
+            }
+          >
+            {usernameValidation.letterCount >= 4 ? "✅" : "❌"} Letters:{" "}
+            {usernameValidation.letterCount}/4
           </div>
-          <div className={usernameValidation.digitCount >= 2 ? "text-green-400" : "text-red-400"}>
-            {usernameValidation.digitCount >= 2 ? "✅" : "❌"} Digits: {usernameValidation.digitCount}/2
+          <div
+            className={
+              usernameValidation.digitCount >= 2
+                ? "text-green-400"
+                : "text-red-400"
+            }
+          >
+            {usernameValidation.digitCount >= 2 ? "✅" : "❌"} Digits:{" "}
+            {usernameValidation.digitCount}/2
           </div>
         </div>
 
@@ -103,11 +126,25 @@ export default function Login({ setToken, goSignup }) {
           onChange={(e) => handlePasswordChange(e.target.value)}
         />
         <div className="text-xs mb-2 space-y-1">
-          <div className={passwordValidation.letterCount >= 4 ? "text-green-400" : "text-red-400"}>
-            {passwordValidation.letterCount >= 4 ? "✅" : "❌"} Letters: {passwordValidation.letterCount}/4
+          <div
+            className={
+              passwordValidation.letterCount >= 4
+                ? "text-green-400"
+                : "text-red-400"
+            }
+          >
+            {passwordValidation.letterCount >= 4 ? "✅" : "❌"} Letters:{" "}
+            {passwordValidation.letterCount}/4
           </div>
-          <div className={passwordValidation.digitCount >= 1 ? "text-green-400" : "text-red-400"}>
-            {passwordValidation.digitCount >= 1 ? "✅" : "❌"} Digits: {passwordValidation.digitCount}/1
+          <div
+            className={
+              passwordValidation.digitCount >= 1
+                ? "text-green-400"
+                : "text-red-400"
+            }
+          >
+            {passwordValidation.digitCount >= 1 ? "✅" : "❌"} Digits:{" "}
+            {passwordValidation.digitCount}/1
           </div>
         </div>
 
@@ -115,11 +152,18 @@ export default function Login({ setToken, goSignup }) {
 
         <button
           onClick={handleLogin}
-          className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded"
+          className={`w-full py-2 rounded ${"bg-blue-600 hover:bg-blue-700"}`}
+          cursor="pointer"
         >
           Login
         </button>
-
+        <button
+          onClick={handleGuestLogin}
+          className="w-full py-2 rounded bg-gray-600 hover:bg-gray-700 mt-2"
+          cursor="pointer"
+        >
+          🧑 Guest Login (₹5000)
+        </button>
         <p className="text-sm text-center mt-3">
           No account?{" "}
           <span className="text-blue-400 cursor-pointer" onClick={goSignup}>
